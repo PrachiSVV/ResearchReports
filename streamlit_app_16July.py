@@ -4,15 +4,12 @@ import pymongo
 from pymongo import MongoClient
 from datetime import datetime
 import pandas as pd
-from dotenv import load_dotenv
 from html import escape
 
-load_dotenv()
 
 # Setup MongoDB
-mongo_client = MongoClient(os.getenv("MONGO_URI"))
-db = mongo_client[os.getenv("DB_NAME")]
-collection = db["ResearchReportTest4dot1"]
+mongo_client = MongoClient(st.secrets['mongodb']['uri']))
+collection = mongo_client["CAG_CHATBOT"]["ResearchReportTest4dot1"]
 
 st.set_page_config(page_title="Research Report Explorer", layout="wide")
 st.title("📊 Equity Research Report Explorer")
