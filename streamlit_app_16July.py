@@ -165,7 +165,7 @@ if len(date_range) == 2:
     ]
 def http_file_url(pdf_id):
     # Returns the URL where your local HTTP server serves the HTML file
-    return f"html_files/{pdf_id}_report.html"
+    return f"https://research-reports-analyzer.streamlit.app/html_files/{pdf_id}_report.html"
 # Display filtered results
 st.markdown(f"**Results: {len(filtered_df)} reports**")
 
