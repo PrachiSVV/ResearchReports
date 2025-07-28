@@ -185,7 +185,7 @@ for _, row in filtered_df.iterrows():
             # st.markdown(f"**Preview:**\n{row['Preview'][:500]}...")
 
             file_path = os.path.join(
-                r"D:\CAG_Chatbot\ResearchReports\html_files", f"{row['PDF ID']}_report.html"
+                r"html_files", f"{row['PDF ID']}_report.html"
             )
             if os.path.exists(file_path):
                 # Open in new tab (served by local HTTP server)
@@ -221,7 +221,7 @@ for _, row in filtered_df.iterrows():
 #             st.markdown(f"**Preview:**\n{row['Preview'][:500]}...")
 
 #             file_path = os.path.join(
-#                 r"D:\CAG_Chatbot\ResearchReports\html_files", f"{row['PDF ID']}_report.html"
+#                 r"html_files", f"{row['PDF ID']}_report.html"
 #             )
 #             if os.path.exists(file_path):
 #                 file_url = local_file_url(row["PDF ID"])
