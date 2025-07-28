@@ -1,4 +1,1 @@
-streamlit
 pymongo
-python-dotenv
-pandas
