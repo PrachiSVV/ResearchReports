@@ -193,10 +193,11 @@ for _, row in filtered_df.iterrows():
             )
             if os.path.exists(file_path):
                 # Open in new tab (served by local HTTP server)
-                file_url = http_file_url(row["PDF ID"])
-                with open(file_url, "r", encoding="utf-8") as f:
-                    html_content = f.read()
-                components.html(html_content, height=800, scrolling=True)
+                with st.expander("Open Report"):
+                    file_url = http_file_url(row["PDF ID"])
+                    with open(file_url, "r", encoding="utf-8") as f:
+                        html_content = f.read()
+                    components.html(html_content, height=800, scrolling=True)
                 
                 # st.markdown(
                 #     f'<a href="{file_url}" target="_blank">🌐 Open HTML Report in New Tab</a>',
