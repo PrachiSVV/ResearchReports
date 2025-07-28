@@ -25,7 +25,7 @@ FIELD_ORDER = [
 def local_file_url(pdf_id):
     html_path = os.path.abspath(
         os.path.join(
-            r"static/html_files", f"{pdf_id}_report.html"
+            r"html_files", f"{pdf_id}_report.html"
         )
     )
     # Convert Windows path to file URL
@@ -165,14 +165,15 @@ if len(date_range) == 2:
     ]
 def http_file_url(pdf_id):
     # Returns the URL where your local HTTP server serves the HTML file
-    return f"/~/static/html_files/{pdf_id}_report.html"
+    return f"html_files/{pdf_id}_report.html"
+    return f"https://research-reports-analyzer.streamlit.app/html_files/{pdf_id}_report.html"
 # Display filtered results
 st.markdown(f"**Results: {len(filtered_df)} reports**")
 
 
 for _, row in filtered_df.iterrows():
     doc = next((d for d in docs if d["_id"] == row["PDF ID"]), None)
-    
+
     if not doc:
         continue
     with st.expander(f"📄 {row['Title']} — ({row['Category']})"):
@@ -185,7 +186,7 @@ for _, row in filtered_df.iterrows():
             # st.markdown(f"**Preview:**\n{row['Preview'][:500]}...")
 
             file_path = os.path.join(
-                r"static/html_files", f"{row['PDF ID']}_report.html"
+                r"html_files", f"{row['PDF ID']}_report.html"
             )
             if os.path.exists(file_path):
                 # Open in new tab (served by local HTTP server)
