@@ -5,6 +5,9 @@ from pymongo import MongoClient
 from datetime import datetime
 import pandas as pd
 from html import escape
+import streamlit.components.v1 as components
+
+
 
 
 # Setup MongoDB
@@ -191,10 +194,14 @@ for _, row in filtered_df.iterrows():
             if os.path.exists(file_path):
                 # Open in new tab (served by local HTTP server)
                 file_url = http_file_url(row["PDF ID"])
-                st.markdown(
-                    f'<a href="{file_url}" target="_blank">🌐 Open HTML Report in New Tab</a>',
-                    unsafe_allow_html=True
-                )
+                with open(file_url, "r", encoding="utf-8") as f:
+                    html_content = f.read()
+                components.html(html_content, height=800, scrolling=True)
+                
+                # st.markdown(
+                #     f'<a href="{file_url}" target="_blank">🌐 Open HTML Report in New Tab</a>',
+                #     unsafe_allow_html=True
+                # )
                 # Download button
                 with open(file_path, "rb") as f:
                     st.download_button(
