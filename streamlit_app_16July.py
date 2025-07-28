@@ -12,7 +12,6 @@ load_dotenv()
 # Setup MongoDB
 mongo_client = MongoClient(os.getenv("MONGO_URI"))
 db = mongo_client[os.getenv("DB_NAME")]
-# collection = db[os.getenv("collection_reports")]
 collection = db["ResearchReportTest4dot1"]
 
 st.set_page_config(page_title="Research Report Explorer", layout="wide")
@@ -29,7 +28,7 @@ FIELD_ORDER = [
 def local_file_url(pdf_id):
     html_path = os.path.abspath(
         os.path.join(
-            r"D:\CAG_Chatbot\ResearchReports\html_files", f"{pdf_id}_report.html"
+            r"html_files", f"{pdf_id}_report.html"
         )
     )
     # Convert Windows path to file URL
