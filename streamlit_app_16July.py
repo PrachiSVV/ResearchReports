@@ -25,7 +25,7 @@ FIELD_ORDER = [
 def local_file_url(pdf_id):
     html_path = os.path.abspath(
         os.path.join(
-            r"html_files", f"{pdf_id}_report.html"
+            r"static/html_files", f"{pdf_id}_report.html"
         )
     )
     # Convert Windows path to file URL
@@ -185,7 +185,7 @@ for _, row in filtered_df.iterrows():
             # st.markdown(f"**Preview:**\n{row['Preview'][:500]}...")
 
             file_path = os.path.join(
-                r"html_files", f"{row['PDF ID']}_report.html"
+                r"static/html_files", f"{row['PDF ID']}_report.html"
             )
             if os.path.exists(file_path):
                 # Open in new tab (served by local HTTP server)
