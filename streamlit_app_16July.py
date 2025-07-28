@@ -8,7 +8,7 @@ from html import escape
 
 
 # Setup MongoDB
-mongo_client = MongoClient(st.secrets['mongodb']['uri']))
+mongo_client = MongoClient(st.secrets['mongodb']['uri'])
 collection = mongo_client["CAG_CHATBOT"]["ResearchReportTest4dot1"]
 
 st.set_page_config(page_title="Research Report Explorer", layout="wide")
