@@ -79,25 +79,6 @@ class UserAuthenticator:
             elif register_option == "Login":
                 self.login_user()
 
-
-
-# Setup MongoDB
-MONGO_URI = st.secrets['mongodb']['uri']
-mongo_client = MongoClient(MONGO_URI)
-collection = mongo_client["CAG_CHATBOT"]["ResearchReportTest4dot1"]
-
-st.set_page_config(page_title="Research Report Explorer", layout="wide")
-st.title("📊 Equity Research Report Explorer")
-
-# Preferred sectoral report field order
-FIELD_ORDER = [
-    "sector", "period_covered", "analysts", "executive_summary",
-    "overall_sentiment", "overall_sentiment_triggers", "sector_highlights",
-    "industry_metrics_tables", "charts_and_figures", "macro_trends",
-    "headwinds_tailwinds", "key_statistics", "top_companies", "weak_companies",
-    "company_wise_detail", "conclusion", "data_sources", "sector_specific"
-]
-
 def authenticate_user():
     authenticator = UserAuthenticator(mongo_client)
     authenticator.user_authenticate()
@@ -207,97 +188,118 @@ def render_sectoral_report(data, field_order):
 
 
 
-# Fetch all processed reports
-docs = list(collection.find({"status": "analysed"}))
-if not docs:
-    st.warning("No processed reports available.")
-    st.stop()
+# Setup MongoDB
+MONGO_URI = st.secrets['mongodb']['uri']
+mongo_client = MongoClient(MONGO_URI)
+collection = mongo_client["CAG_CHATBOT"]["ResearchReportTest4dot1"]
 
-# DataFrame for sidebar/table
-df = pd.DataFrame([{
-    "PDF ID": doc["_id"],
-    "Title": doc.get("title", ""),
-    "Company Names": ", ".join(doc.get("company_names", [])),
-    "Category": doc.get("category"),
-    "Auto Category": doc.get("auto_category"),
-    "Published Date": doc.get("published_date"),
-    "Source": doc.get("metadata", {}).get("source"),
-    "Preview": doc.get("metadata", {}).get("text_preview", ""),
-    "File Name": doc.get("file_name", doc.get("metadata", {}).get("file_name")),
-} for doc in docs])
+initialize_session_state()
+authenticate_user()
 
-# Sidebar filters
-with st.sidebar:
-    st.header("🔍 Filters")
-    companies = st.multiselect(
-        "Company",
-        sorted(set(sum([doc.get("company_names", []) for doc in docs], [])))
-    )
-    categories = st.multiselect("Category", sorted(df["Category"].dropna().unique()))
-    sources = st.multiselect("Source", sorted(df["Source"].dropna().unique()))
-    date_range = st.date_input("Date Range", [])
+if st.session_state.logged_in:
 
-# Apply filters
-filtered_df = df.copy()
-if companies:
-    filtered_df = filtered_df[filtered_df["Company Names"].apply(lambda x: any(c in x for c in companies))]
-if categories:
-    filtered_df = filtered_df[filtered_df["Category"].isin(categories)]
-if sources:
-    filtered_df = filtered_df[filtered_df["Source"].isin(sources)]
-if len(date_range) == 2:
-    start, end = map(lambda d: d.strftime("%Y-%m-%d"), date_range)
-    filtered_df = filtered_df[
-        filtered_df["Published Date"].between(start, end)
+    st.set_page_config(page_title="Research Report Explorer", layout="wide")
+    st.title("📊 Equity Research Report Explorer")
+
+    # Preferred sectoral report field order
+    FIELD_ORDER = [
+        "sector", "period_covered", "analysts", "executive_summary",
+        "overall_sentiment", "overall_sentiment_triggers", "sector_highlights",
+        "industry_metrics_tables", "charts_and_figures", "macro_trends",
+        "headwinds_tailwinds", "key_statistics", "top_companies", "weak_companies",
+        "company_wise_detail", "conclusion", "data_sources", "sector_specific"
     ]
-def http_file_url(pdf_id):
-    # Returns the URL where your local HTTP server serves the HTML file
-    return f"html_files/{pdf_id}_report.html"
-    # return f"html_files/{pdf_id}_report.html"
-# Display filtered results
-st.markdown(f"**Results: {len(filtered_df)} reports**")
+    # Fetch all processed reports
+    docs = list(collection.find({"status": "analysed"}))
+    if not docs:
+        st.warning("No processed reports available.")
+        st.stop()
+
+    # DataFrame for sidebar/table
+    df = pd.DataFrame([{
+        "PDF ID": doc["_id"],
+        "Title": doc.get("title", ""),
+        "Company Names": ", ".join(doc.get("company_names", [])),
+        "Category": doc.get("category"),
+        "Auto Category": doc.get("auto_category"),
+        "Published Date": doc.get("published_date"),
+        "Source": doc.get("metadata", {}).get("source"),
+        "Preview": doc.get("metadata", {}).get("text_preview", ""),
+        "File Name": doc.get("file_name", doc.get("metadata", {}).get("file_name")),
+    } for doc in docs])
+
+    # Sidebar filters
+    with st.sidebar:
+        st.header("🔍 Filters")
+        companies = st.multiselect(
+            "Company",
+            sorted(set(sum([doc.get("company_names", []) for doc in docs], [])))
+        )
+        categories = st.multiselect("Category", sorted(df["Category"].dropna().unique()))
+        sources = st.multiselect("Source", sorted(df["Source"].dropna().unique()))
+        date_range = st.date_input("Date Range", [])
+
+    # Apply filters
+    filtered_df = df.copy()
+    if companies:
+        filtered_df = filtered_df[filtered_df["Company Names"].apply(lambda x: any(c in x for c in companies))]
+    if categories:
+        filtered_df = filtered_df[filtered_df["Category"].isin(categories)]
+    if sources:
+        filtered_df = filtered_df[filtered_df["Source"].isin(sources)]
+    if len(date_range) == 2:
+        start, end = map(lambda d: d.strftime("%Y-%m-%d"), date_range)
+        filtered_df = filtered_df[
+            filtered_df["Published Date"].between(start, end)
+        ]
+    def http_file_url(pdf_id):
+        # Returns the URL where your local HTTP server serves the HTML file
+        return f"html_files/{pdf_id}_report.html"
+        # return f"html_files/{pdf_id}_report.html"
+    # Display filtered results
+    st.markdown(f"**Results: {len(filtered_df)} reports**")
 
 
-for _, row in filtered_df.iterrows():
-    doc = next((d for d in docs if d["_id"] == row["PDF ID"]), None)
+    for _, row in filtered_df.iterrows():
+        doc = next((d for d in docs if d["_id"] == row["PDF ID"]), None)
 
-    if not doc:
-        continue
-    with st.expander(f"📄 {row['Title']} — ({row['Category']})"):
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.markdown(f"**PDF ID:** {row['PDF ID']}")
-            st.markdown(f"**Published Date:** {row['Published Date']}")
-            st.markdown(f"**Source:** {row['Source']}")
-            st.markdown(f"**Category:** {row['Category']}")
-            # st.markdown(f"**Preview:**\n{row['Preview'][:500]}...")
+        if not doc:
+            continue
+        with st.expander(f"📄 {row['Title']} — ({row['Category']})"):
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.markdown(f"**PDF ID:** {row['PDF ID']}")
+                st.markdown(f"**Published Date:** {row['Published Date']}")
+                st.markdown(f"**Source:** {row['Source']}")
+                st.markdown(f"**Category:** {row['Category']}")
+                # st.markdown(f"**Preview:**\n{row['Preview'][:500]}...")
 
-            file_path = os.path.join(
-                r"html_files", f"{row['PDF ID']}_report.html"
-            )
-            if os.path.exists(file_path):
-                # Open in new tab (served by local HTTP server)
-                with st.expander("Open Report"):
-                    file_url = http_file_url(row["PDF ID"])
-                    with open(file_url, "r", encoding="utf-8") as f:
-                        html_content = f.read()
-                    components.html(html_content, height=800, scrolling=True)
-                
-                # st.markdown(
-                #     f'<a href="{file_url}" target="_blank">🌐 Open HTML Report in New Tab</a>',
-                #     unsafe_allow_html=True
-                # )
-                # Download button
-                with open(file_path, "rb") as f:
-                    st.download_button(
-                        label="⬇️ Download HTML Report",
-                        data=f,
-                        file_name=f"{row['PDF ID']}_report.html",
-                        mime="text/html",
-                        key=row["PDF ID"]+"_download_html"
-                    )
-            else:
-                st.info("HTML report file not found.")
+                file_path = os.path.join(
+                    r"html_files", f"{row['PDF ID']}_report.html"
+                )
+                if os.path.exists(file_path):
+                    # Open in new tab (served by local HTTP server)
+                    with st.expander("Open Report"):
+                        file_url = http_file_url(row["PDF ID"])
+                        with open(file_url, "r", encoding="utf-8") as f:
+                            html_content = f.read()
+                        components.html(html_content, height=800, scrolling=True)
+                    
+                    # st.markdown(
+                    #     f'<a href="{file_url}" target="_blank">🌐 Open HTML Report in New Tab</a>',
+                    #     unsafe_allow_html=True
+                    # )
+                    # Download button
+                    with open(file_path, "rb") as f:
+                        st.download_button(
+                            label="⬇️ Download HTML Report",
+                            data=f,
+                            file_name=f"{row['PDF ID']}_report.html",
+                            mime="text/html",
+                            key=row["PDF ID"]+"_download_html"
+                        )
+                else:
+                    st.info("HTML report file not found.")
 
-        with col2:
-            pass
+            with col2:
+                pass
